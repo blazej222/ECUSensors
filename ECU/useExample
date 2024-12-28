@@ -1,0 +1,34 @@
+mongosh
+use SensorBase
+db.createCollection('Sensors')
+db.Sensors.insertMany([
+  {
+    "Timestamp": ISODate("2024-12-28T12:00:00Z"),
+    "SensorType": "Temperature",
+    "Instance": "Sensor1",
+    "Value": 22.5
+  },
+  {
+    "Timestamp": ISODate("2024-12-28T12:01:00Z"),
+    "SensorType": "Temperature",
+    "Instance": "Sensor2",
+    "Value": 21.8
+  },
+  {
+    "Timestamp": ISODate("2024-12-28T12:02:00Z"),
+    "SensorType": "Humidity",
+    "Instance": "Sensor1",
+    "Value": 65.2
+  }
+]);
+db.Sensors.find().pretty()
+
+###
+
+GET http://localhost:8080/api/sensors
+
+###
+
+GET http://localhost:8080/api/sensors/filter?sensorType=Temperature&startDate=2024-12-28T00:00:00&endDate=2024-12-28T12:00:30
+
+###
