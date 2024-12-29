@@ -8,6 +8,7 @@ builder.Services.Configure<SensorDatabaseSettings>(
     builder.Configuration.GetSection("SensorDatabase"));
 
 builder.Services.AddSingleton<SensorDataService>();
+builder.Services.AddHostedService<MqttService>();
 
 // Add services to the container.
 
