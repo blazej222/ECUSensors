@@ -1,1 +1,2 @@
 ﻿Install-Package MongoDB.Driver
+Install-Package Swashbuckle.AspNetCore -Version 6.6.2
