@@ -2,10 +2,12 @@
 services:
   app:
     build:
-      context: .
-      dockerfile: ECU\Dockerfile
+      context: .\ECUBackend
+      dockerfile: ECUBackend\Dockerfile
     ports:
       - "8080:80"
+      - "1337:8080"
+      - "1338:8081" 
     depends_on:
       - mongodb
     environment:
