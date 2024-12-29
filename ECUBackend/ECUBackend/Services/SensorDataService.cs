@@ -10,7 +10,7 @@ namespace ECUBackend.Services
 
         public SensorDataService(IOptions<SensorDatabaseSettings> sensorDatabaseSettings)
         {
-            var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING") ?? "mongodb://localhost:27017";
+            var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING") ?? "mongodb://host.docker.internal:27017"; //windows dns
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(sensorDatabaseSettings.Value.DatabaseName);
             _sensorDataCollection = database.GetCollection<SensorData>(sensorDatabaseSettings.Value.SensorCollectionName);
@@ -29,5 +29,26 @@ namespace ECUBackend.Services
                 (!startDate.HasValue || x.Timestamp >= startDate) &&
                 (!endDate.HasValue || x.Timestamp <= endDate))
                 .ToListAsync();
+
+        public async Task<List<SensorData>> GetAll() =>
+            await _sensorDataCollection.Find(_ => true).ToListAsync();
+
+        public async Task<bool> CheckMongoConnection()
+        {
+            try
+            {
+                var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING") ?? "mongodb://host.docker.internal:27017"; //windows dns
+                var client = new MongoClient(connectionString);
+                await client.ListDatabasesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"MongoDB connection failed: {ex.Message}");
+                return false;
+            }
+        }
     }
+
 }
+

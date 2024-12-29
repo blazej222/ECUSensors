@@ -1,5 +1,7 @@
 ﻿version: '3.8'
 services:
+
+### Comment this if you want to debug the app from VS
     app:
         build:
           context: .\ECUBackend
@@ -13,7 +15,7 @@ services:
           - mosquitto
         environment:
           - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
-
+###
 
     mongodb:
         image: mongo:latest

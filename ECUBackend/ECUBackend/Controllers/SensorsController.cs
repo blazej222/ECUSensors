@@ -34,5 +34,18 @@ namespace ECU.Controllers
             return CreatedAtAction(nameof(Get), new { id = data.Id }, data);
         }
 
+        [HttpGet("check-connection")]
+        public async Task<ActionResult> CheckConnection()
+        {
+            bool isConnected = await _sensorDataService.CheckMongoConnection();
+            if (isConnected)
+            {
+                return Ok("MongoDB connection successful");
+            }
+            else
+            {
+                return StatusCode(500, "MongoDB connection failed");
+            }
+        }
     }
 }
