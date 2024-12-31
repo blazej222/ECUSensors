@@ -29,7 +29,7 @@ namespace ECU.Controllers
 
         [HttpGet("data/filter")]
         public async Task<ActionResult<List<SensorData>>> GetFiltered(
-            [FromQuery] string sensorType,
+            [FromQuery] string? sensorType,
             [FromQuery] uint? instanceId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
