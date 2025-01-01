@@ -2,10 +2,13 @@
   "name": "ecu-sensors-frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:1337",
   "dependencies": {
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "cra-template": "1.2.0",
+    "date-fns": "^4.1.0",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^19.0.0",

@@ -8,7 +8,6 @@ const Header = () => (
             <nav>
                 <Link to="/" className="px-4 hover:underline">Home</Link>
                 <Link to="/sensors" className="px-4 hover:underline">Sensors</Link>
-                <Link to="/charts" className="px-4 hover:underline">Charts</Link>
                 <Link to="/dashboard" className="px-4 hover:underline">Dashboard</Link> {/* Nowa zakładka */}
             </nav>
         </div>
