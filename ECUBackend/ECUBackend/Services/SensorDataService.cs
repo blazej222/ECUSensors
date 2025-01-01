@@ -1,5 +1,6 @@
 ﻿using ECUBackend.Models;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Runtime.CompilerServices;
 
@@ -62,6 +63,43 @@ namespace ECUBackend.Services
                 .Limit(limit)
                 .ToListAsync();
         }
+
+        public async Task<List<SensorSummary>> GetSensorSummary(int recordCount = 100)
+        {
+            var pipeline = new[]
+            {
+                new BsonDocument("$sort", new BsonDocument("Timestamp", -1)),
+
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", new BsonDocument
+                        {
+                            { "SensorType", "$SensorType" },
+                            { "InstanceId", "$InstanceId" }
+                        }
+                    },
+                    { "LastValues", new BsonDocument("$push", "$Value") },
+                    { "LastValue", new BsonDocument("$first", "$Value") }
+                }),
+
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "SensorType", "$_id.SensorType" },
+                    { "InstanceId", "$_id.InstanceId" },
+                    { "AverageValue", new BsonDocument("$avg", new BsonDocument("$slice", new BsonArray { "$LastValues", recordCount })) },
+                    { "LastValue", "$LastValue" }
+                })
+            };
+
+            var result = await _sensorDataCollection.Aggregate<SensorSummary>(pipeline).ToListAsync();
+            return result;
+        }
+
+
+
+
+
 
         public async Task<bool> DeleteSensorDataAsync(FilterDefinition<SensorData> filter)
         {

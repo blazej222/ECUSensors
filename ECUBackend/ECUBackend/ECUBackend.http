@@ -1,6 +1,26 @@
-@ECUBackend_HostAddress = http://localhost:5207
+@ECUBackend_HostAddress = http://localhost:1337
 
 GET {{ECUBackend_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+GET {{ECUBackend_HostAddress}}/api/sensors/data
+
+###
+
+GET {{ECUBackend_HostAddress}}/api/sensors/summary?recordCount=100
+
+###
+
+GET {{ECUBackend_HostAddress}}/api/sensors/data/filter?sensorType=coolant_temperature
+
+###
+
+GET {{ECUBackend_HostAddress}}/api/sensors/data/filter?sensorType=coolant_temperature&format=csv
+
+###
+
+GET {{ECUBackend_HostAddress}}/api/sensors/data/filter?sensorType=coolant_temperature&format=json
 
 ###
