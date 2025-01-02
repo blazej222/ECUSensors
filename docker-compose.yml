@@ -2,21 +2,21 @@
 services:
 
 ### Comment this if you want to debug the app from VS
-    app:
-        build:
-          context: .\ECUBackend
-          dockerfile: ECUBackend\Dockerfile
-        ports:
-          - "8080:80"
-          - "1337:8080"
-          - "1338:8081" 
-        depends_on:
-          - mongodb
-          - mosquitto
-        environment:
-          - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
-          - MQQT_BROKER_ADDRESS=mosquitto
-          - MQQT_BROKER_PORT=1883
+    # app:
+    #     build:
+    #       context: .\ECUBackend
+    #       dockerfile: ECUBackend\Dockerfile
+    #     ports:
+    #       - "8080:80"
+    #       - "1337:8080"
+    #       - "1338:8081" 
+    #     depends_on:
+    #       - mongodb
+    #       - mosquitto
+    #     environment:
+    #       - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
+    #       - MQQT_BROKER_ADDRESS=mosquitto
+    #       - MQQT_BROKER_PORT=1883
 ###
 
     mongodb:
