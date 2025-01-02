@@ -66,8 +66,14 @@ const SensorsPage = () => {
                     return acc;
                 }, {});
 
+                // Sortowanie punktów w każdej grupie względem czasu
+                const sortedGroupedData = Object.entries(groupedData).reduce((acc, [key, points]) => {
+                    acc[key] = points.sort((a, b) => a.x - b.x); // Sortowanie względem czasu
+                    return acc;
+                }, {});
+
                 // Przygotowanie danych wykresu
-                const datasets = Object.entries(groupedData).map(([key, points]) => ({
+                const datasets = Object.entries(sortedGroupedData).map(([key, points]) => ({
                     label: key,
                     data: points,
                     borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
