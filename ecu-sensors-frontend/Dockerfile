@@ -1,29 +1,27 @@
-# Etap budowania aplikacji
-FROM node:18 AS build
+# Użyj odpowiedniej wersji Node.js
+FROM node:18-alpine
 
-# Ustawienie katalogu roboczego
+# Ustaw katalog roboczy
 WORKDIR /app
 
-# Skopiowanie plików konfiguracyjnych aplikacji
-COPY package*.json ./
+# Kopiuj pliki package.json i package-lock.json (jeśli istnieje)
+COPY package.json ./
+COPY package-lock.json ./
 
-# Instalacja zależności
-RUN npm install
+# Ustaw flagę środowiska, aby zminimalizować rozmiar logów
+ENV CI=true
 
-# Skopiowanie całej aplikacji
-COPY . .
+# Zainstaluj zależności z --legacy-peer-deps, aby ominąć problemy z peer dependencies
+RUN npm install --legacy-peer-deps
 
-# Budowa aplikacji
+# Kopiuj resztę aplikacji do kontenera
+COPY . ./
+
+# Buduj aplikację
 RUN npm run build
 
-# Etap serwowania aplikacji
-FROM nginx:1.23
+# Ekspozycja portu
+EXPOSE 3000
 
-# Skopiowanie zbudowanej aplikacji do katalogu Nginx
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Domyślny port Nginx
-EXPOSE 80
-
-# Uruchomienie Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Uruchom serwer aplikacji
+CMD ["npm", "start"]

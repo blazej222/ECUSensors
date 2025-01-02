@@ -74,7 +74,7 @@ const SensorsPage = () => {
                         Math.random() * 255
                     )}, ${Math.floor(Math.random() * 255)}, 1)`,
                     backgroundColor: 'rgba(0, 0, 0, 0)',
-                    tension: 0.4,
+                    tension: 0, // Linia prosta między punktami
                 }));
 
                 setChartData({
