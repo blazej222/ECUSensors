@@ -4,6 +4,7 @@ namespace ECUBackend.Services
     using Nethereum.Web3;
     using Nethereum.Web3.Accounts;
     using System.Numerics;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public class BlockchainService
@@ -11,6 +12,8 @@ namespace ECUBackend.Services
         private readonly string _rpcUrl;
         private readonly string _contractAddress;
         private readonly string _abi;
+
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public BlockchainService(string rpcUrl, string contractAddress, string abi)
         {
@@ -41,6 +44,7 @@ namespace ECUBackend.Services
 
 
             Console.WriteLine(sensorAddress);
+            await _semaphore.WaitAsync();
 
             var receipt = await rewardFunction.SendTransactionAndWaitForReceiptAsync(
                 from: account.Address,
@@ -48,6 +52,8 @@ namespace ECUBackend.Services
                 value: null,
                 functionInput: new object[] { sensorAddress, amount }
             );
+
+            _semaphore.Release();
 
             // Wyświetlenie hashu transakcji
             Console.WriteLine($"Transaction successful! Hash: {receipt.TransactionHash}");
