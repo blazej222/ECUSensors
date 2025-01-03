@@ -15,25 +15,25 @@ SENSOR_TYPES = {
 }
 
 SENSORS =[
-    {"type": "coolant_temperature", "id":1, "rate":30},
-    {"type": "coolant_temperature", "id":2, "rate":30},
-    {"type": "coolant_temperature", "id":3, "rate":30},
-    {"type": "coolant_temperature", "id":4, "rate":30},
+    {"type": "coolant_temperature", "id":1, "rate":6},
+    # {"type": "coolant_temperature", "id":2, "rate":30},
+    # {"type": "coolant_temperature", "id":3, "rate":30},
+    # {"type": "coolant_temperature", "id":4, "rate":30},
     
-    {"type": "map_pressure", "id":1, "rate":60},
-    {"type": "map_pressure", "id":2, "rate":60},
-    {"type": "map_pressure", "id":3, "rate":60},
-    {"type": "map_pressure", "id":4, "rate":60},
+    # {"type": "map_pressure", "id":1, "rate":60},
+    # {"type": "map_pressure", "id":2, "rate":60},
+    # {"type": "map_pressure", "id":3, "rate":60},
+    # {"type": "map_pressure", "id":4, "rate":60},
     
-    {"type": "oxygen_level", "id":1, "rate":60},
-    {"type": "oxygen_level", "id":2, "rate":60},
-    {"type": "oxygen_level", "id":3, "rate":60},
-    {"type": "oxygen_level", "id":4, "rate":60},
+    # {"type": "oxygen_level", "id":1, "rate":60},
+    # {"type": "oxygen_level", "id":2, "rate":60},
+    # {"type": "oxygen_level", "id":3, "rate":60},
+    # {"type": "oxygen_level", "id":4, "rate":60},
     
-    {"type": "rpm", "id":1, "rate":60},
-    {"type": "rpm", "id":2, "rate":60},
-    {"type": "rpm", "id":3, "rate":60},
-    {"type": "rpm", "id":4, "rate":60},
+    # {"type": "rpm", "id":1, "rate":60},
+    # {"type": "rpm", "id":2, "rate":60},
+    # {"type": "rpm", "id":3, "rate":60},
+    # {"type": "rpm", "id":4, "rate":60},
     
     
 ]
@@ -50,7 +50,7 @@ def generate_data(sensor_type, instance_id):
     }
 
 def publish_data(client):
-    last_published = {sensor["type"]+str(sensor["id"]): time.time() for sensor in SENSORS}
+    last_published = {sensor["type"]+str(sensor["id"]): -3000 for sensor in SENSORS}
 
     while True:
         for sensor in SENSORS:

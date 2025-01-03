@@ -13,6 +13,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["ECUBackend/ECUBackend.csproj", "ECUBackend/"]
+COPY ["sensors.json", "sensors.json"]
 RUN dotnet restore "./ECUBackend/ECUBackend.csproj"
 COPY . .
 WORKDIR "/src/ECUBackend"
