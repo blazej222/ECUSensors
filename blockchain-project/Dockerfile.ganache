@@ -1,0 +1,7 @@
+FROM node:20
+
+RUN npm install -g ganache
+
+WORKDIR /ganache
+
+CMD ["sh", "-c", "ganache --port 7545 --host 0.0.0.0 --accounts 20 --defaultBalanceEther 100 --chain.chainId 123456 --chain.networkId 123456 | tee /ganache-data/ganache-output.log"]

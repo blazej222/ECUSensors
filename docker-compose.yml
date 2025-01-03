@@ -1,11 +1,11 @@
-﻿version: '3.8'
-services:
+﻿services:
 
 ### Comment this if you want to debug the app from VS
     app:
         build:
           context: .\ECUBackend
           dockerfile: ECUBackend\Dockerfile
+        restart: always
         ports:
           - "8080:80"
           - "1337:8080"
@@ -17,7 +17,27 @@ services:
           - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
           - MQQT_BROKER_ADDRESS=mosquitto
           - MQQT_BROKER_PORT=1883
+          - RPC_URL=http://ganache:7545
+        volumes:
+          - ./ganache-data:/ganache-data
 ###
+
+    ganache:
+      build:
+        context: ./blockchain-project
+        dockerfile: Dockerfile.ganache
+      container_name: ganache
+      ports:
+        - "7545:7545"
+      volumes:
+        - ./ganache-data:/ganache-data
+
+    truffle:
+      build:
+        context: ./blockchain-project
+        dockerfile: Dockerfile.truffle
+      container_name: truffle
+
 
     mongodb:
         image: mongo:latest
