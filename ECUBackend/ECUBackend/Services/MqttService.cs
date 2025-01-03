@@ -14,7 +14,6 @@ public class MqttService : BackgroundService
     private const string TOPIC = "sensors";
     private SensorDataService _sensorService;
     private BlockchainService _blockchainService;
-    private Dictionary<string, SensorCryptoWallet> _walletDict = new();
     private readonly WebSocketManager _webSocketManager;
 
     public MqttService(SensorDataService service, BlockchainService blockchainService, WebSocketManager webSocketManager)
@@ -34,23 +33,6 @@ public class MqttService : BackgroundService
             .WithCleanSession()
             .Build();
 
-        CreateWalletDictionary();
-    }
-
-    private void CreateWalletDictionary()
-    {
-        string json = File.ReadAllText("Resources/sensors.json");
-
-
-        var wallets = JsonSerializer.Deserialize<List<SensorCryptoWallet>>(json);
-
-        foreach (var wallet in wallets)
-        {
-            if (!string.IsNullOrEmpty(wallet.SensorId))
-            {
-                _walletDict[wallet.SensorId] = wallet;
-            }
-        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -90,7 +72,7 @@ public class MqttService : BackgroundService
 
         await _sensorService.InsertSensorData(sensorData);
         //await
-        _blockchainService.RewardSensor(_walletDict[$"{sensorData.SensorType}{sensorData.InstanceId}"].Address, rewardAmount);
+        _blockchainService.RewardSensor($"{sensorData.SensorType}{sensorData.InstanceId}", rewardAmount);
 		
 		var summary = await _sensorService.GetSingleSensorSummary(sensorData.SensorType, sensorData.InstanceId);
         await _webSocketManager.NotifyFrontend(summary);
