@@ -4,11 +4,8 @@ using System.Text;
 using ECUBackend.Services;
 using ECUBackend.Models;
 using MQTTnet.Server;
-using MongoDB.Bson;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SharpCompress.Common;
-using System.Numerics;
 
 public class MqttService : BackgroundService
 {
@@ -19,7 +16,8 @@ public class MqttService : BackgroundService
     private BlockchainService _blockchainService;
     private Dictionary<string, SensorCryptoWallet> _walletDict = new();
 
-    string adminPrivateKey = "40a19da9ea93ca341ad4118ff39cd259f2a42471fcb89e2c9539674ad21573a0";
+    private readonly string _adminPrivateKey = "0x8afc011d81328f202730e85dce98c1c0596a977c99f38b05800ce96762fda0f5";
+    private readonly string _contractAddress = "0xd8790cbc63d62a82e5a81f793af99f0793d127a3";
 
 
     public MqttService(SensorDataService service)
@@ -32,8 +30,8 @@ public class MqttService : BackgroundService
 
         _options = new MqttClientOptionsBuilder()
             .WithTcpServer(broker, port) // MQTT broker address and port
-            //.WithCredentials(username, password) // Set username and password
-            //.WithClientId(clientId)
+                                         //.WithCredentials(username, password) // Set username and password
+                                         //.WithClientId(clientId)
             .WithCleanSession()
             .Build();
 
@@ -43,7 +41,7 @@ public class MqttService : BackgroundService
 
     private void CreateWalletDictionary()
     {
-        string json = File.ReadAllText("sensors.json");
+        string json = File.ReadAllText("Resources/sensors.json");
 
 
         var wallets = JsonSerializer.Deserialize<List<SensorCryptoWallet>>(json);
@@ -90,21 +88,20 @@ public class MqttService : BackgroundService
 
         SensorData sensorData = JsonSerializer.Deserialize<SensorData>(message, options);
         //var rewardAmount = new BigInteger(100000000000);
-        var rewardAmount = 1;
+        var rewardAmount = 10000;
 
-        await _blockchainService.RewardSensor(adminPrivateKey, _walletDict[$"{sensorData.SensorType}{sensorData.InstanceId}"].Address, rewardAmount);
         await _sensorService.InsertSensorData(sensorData);
+        //await
+            _blockchainService.RewardSensor(_adminPrivateKey, _walletDict[$"{sensorData.SensorType}{sensorData.InstanceId}"].Address, rewardAmount);
     }
 
     private void InitBlockchainService()
     {
-        var rpcUrl = "https://1rpc.io/holesky";
-        var contractAddress = "0xe10C866b9BCD771E16e38b7E594AC0df126d2C67"; // Adres kontraktu wdrożonego w Holesky
-        // Wczytaj ABI
+        var rpcUrl = Environment.GetEnvironmentVariable("RPC_URL") ?? "http://host.docker.internal:7545"; //"http://host.docker.internal:7545";
         var abi = File.ReadAllText("Resources/SensorToken.abi");
 
         // Inicjalizacja BlockchainService
-        _blockchainService = new BlockchainService(rpcUrl, contractAddress, abi);
+        _blockchainService = new BlockchainService(rpcUrl, _contractAddress, abi);
     }
 
     public class UnixTimestampConverter : JsonConverter<DateTime>
