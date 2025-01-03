@@ -1,0 +1,1 @@
+sleep 10 && truffle migrate --network devel

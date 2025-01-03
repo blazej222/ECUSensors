@@ -1,46 +1,71 @@
-﻿version: '3.8'
-services:
+﻿services:
 
 ### Comment this if you want to debug the app from VS
-    app:
-        build:
-          context: .\ECUBackend
-          dockerfile: ECUBackend\Dockerfile
-        ports:
-          - "8080:80"
-          - "1337:8080"
-          - "1338:8081" 
-        depends_on:
-          - mongodb
-          - mosquitto
-        environment:
-          - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
-          - MQQT_BROKER_ADDRESS=mosquitto
-          - MQQT_BROKER_PORT=1883
+    # app:
+    #     build:
+    #       context: .\ECUBackend
+    #       dockerfile: ECUBackend\Dockerfile
+    #     ports:
+    #       - "8080:80"
+    #       - "1337:8080"
+    #       - "1338:8081" 
+    #     depends_on:
+    #       - mongodb
+    #       - mosquitto
+    #     environment:
+    #       - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
+    #       - MQQT_BROKER_ADDRESS=mosquitto
+    #       - MQQT_BROKER_PORT=1883
 ###
 
-    mongodb:
-        image: mongo:latest
-        container_name: mongodb
-        ports:
-          - "27017:27017"
-        volumes:
-          - mongodb_data:/data/db
+    ganache:
+      image: trufflesuite/ganache
+      container_name: ganache
+      ports:
+        - "7545:7545"
+      command:
+        - --port
+        - "7545"
+        - --host
+        - "0.0.0.0"
+        - --accounts
+        - "20"
+        - --defaultBalanceEther
+        - "100"
+        - --chain.chainId
+        - "123456"
+        - --chain.networkId
+        - "123456"
 
-    mosquitto:
-        image: eclipse-mosquitto
-        hostname: mosquitto
-        container_name: mosquitto
-        restart: unless-stopped
-        ports:
-          - "1883:1883"
-          - "9001:9001"
-        volumes:
-          - ./mosquitto:/etc/mosquitto
-          - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    truffle:
+      build:
+        context: ./blockchain-project
+        dockerfile: Dockerfile.truffle
+      container_name: truffle
 
-volumes:
-    mongodb_data:
-    mosquitto_data:
-    mosquitto_config:
-    mosquitto_log:
+
+#     mongodb:
+#         image: mongo:latest
+#         container_name: mongodb
+#         ports:
+#           - "27017:27017"
+#         volumes:
+#           - mongodb_data:/data/db
+
+#     mosquitto:
+#         image: eclipse-mosquitto
+#         hostname: mosquitto
+#         container_name: mosquitto
+#         restart: unless-stopped
+#         ports:
+#           - "1883:1883"
+#           - "9001:9001"
+#         volumes:
+#           - ./mosquitto:/etc/mosquitto
+#           - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+# volumes:
+#     mongodb_data:
+#     mosquitto_data:
+#     mosquitto_config:
+#     mosquitto_log:

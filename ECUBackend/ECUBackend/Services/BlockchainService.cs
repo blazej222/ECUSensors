@@ -39,17 +39,36 @@ namespace ECUBackend.Services
             //var receipt = await web3.Eth.TransactionManager.SendTransactionAsync(transactionInput);
             //var receipt = await rewardFunction.SendTransactionAndWaitForReceiptAsync(transactionInput);
 
+
             Console.WriteLine(sensorAddress);
 
             var receipt = await rewardFunction.SendTransactionAndWaitForReceiptAsync(
                 from: account.Address,
-                gas: new Nethereum.Hex.HexTypes.HexBigInteger(5000000),
+                gas: new Nethereum.Hex.HexTypes.HexBigInteger(5000000), // gas limit
                 value: null,
                 functionInput: new object[] { sensorAddress, amount }
             );
 
             // Wyświetlenie hashu transakcji
             Console.WriteLine($"Transaction successful! Hash: {receipt.TransactionHash}");
+        }
+
+        public async Task GetBalance(string accountAddress)
+        {
+            // Tworzenie instancji Web3
+            var web3 = new Web3(_rpcUrl);
+
+            // Pobieranie kontraktu na podstawie ABI i adresu
+            var contract = web3.Eth.GetContract(_abi, _contractAddress);
+
+            // Pobieranie funkcji "balanceOf"
+            var balanceOfFunction = contract.GetFunction("balanceOf");
+
+            // Wywołanie funkcji "balanceOf" dla określonego adresu
+            var balance = await balanceOfFunction.CallAsync<BigInteger>(accountAddress);
+
+            // Wyświetlenie balansu na konsoli
+            Console.WriteLine($"Balance of {accountAddress}: {balance} tokens");
         }
     }
 
