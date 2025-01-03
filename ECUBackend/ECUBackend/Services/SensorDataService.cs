@@ -8,13 +8,17 @@ namespace ECUBackend.Services
 {
     public class SensorDataService
     {
+        private BlockchainService _blockchainService;
         private readonly IMongoCollection<SensorData> _sensorDataCollection;
+        
 
-        public SensorDataService(IOptions<SensorDatabaseSettings> sensorDatabaseSettings)
+        public SensorDataService(BlockchainService blockchainService, IOptions<SensorDatabaseSettings> sensorDatabaseSettings)
         {
+            _blockchainService = blockchainService;
             var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING") ?? "mongodb://host.docker.internal:27017"; //windows dns
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(sensorDatabaseSettings.Value.DatabaseName);
+
             _sensorDataCollection = database.GetCollection<SensorData>(sensorDatabaseSettings.Value.SensorCollectionName);
         }
 
@@ -92,8 +96,21 @@ namespace ECUBackend.Services
                 })
             };
 
-            var result = await _sensorDataCollection.Aggregate<SensorSummary>(pipeline).ToListAsync();
-            return result;
+            var summaries = await _sensorDataCollection.Aggregate<SensorSummary>(pipeline).ToListAsync();
+
+            // Pobieranie balansu dla każdego sensora
+            foreach (var summary in summaries)
+            {
+                string accountAddress = $"{summary.SensorType}{summary.InstanceId}";
+                Console.WriteLine("Siema " + accountAddress);
+                if (_blockchainService == null)
+                {
+                    Console.WriteLine("Siema NULLLLL");
+                }
+                summary.Balance = await _blockchainService.GetBalance(accountAddress);
+            }
+
+            return summaries;
         }
 
 
@@ -158,42 +175,49 @@ namespace ECUBackend.Services
         public async Task<SensorSummary> GetSingleSensorSummary(string sensorType, uint instanceId, int recordCount = 100)
         {
             var pipeline = new[]
-               {
-            // Filter data for the specified SensorType and InstanceId
-            new BsonDocument("$match", new BsonDocument
             {
-                { "SensorType", sensorType },
-                { "InstanceId", instanceId }
-            }),
+                // Filter data for the specified SensorType and InstanceId
+                new BsonDocument("$match", new BsonDocument
+                {
+                    { "SensorType", sensorType },
+                    { "InstanceId", instanceId }
+                }),
 
-            // Sort by Timestamp in descending order
-            new BsonDocument("$sort", new BsonDocument("Timestamp", -1)),
+                // Sort by Timestamp in descending order
+                new BsonDocument("$sort", new BsonDocument("Timestamp", -1)),
 
-            // Group by SensorType and InstanceId
-            new BsonDocument("$group", new BsonDocument
-            {
-                { "_id", new BsonDocument
-                    {
-                        { "SensorType", "$SensorType" },
-                        { "InstanceId", "$InstanceId" }
-                    }
-                },
-                { "LastValues", new BsonDocument("$push", "$Value") },
-                { "LastValue", new BsonDocument("$first", "$Value") }
-            }),
+                // Group by SensorType and InstanceId
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", new BsonDocument
+                        {
+                            { "SensorType", "$SensorType" },
+                            { "InstanceId", "$InstanceId" }
+                        }
+                    },
+                    { "LastValues", new BsonDocument("$push", "$Value") },
+                    { "LastValue", new BsonDocument("$first", "$Value") }
+                }),
 
-            // Project the desired fields
-            new BsonDocument("$project", new BsonDocument
-            {
-                { "_id", 0 },
-                { "SensorType", "$_id.SensorType" },
-                { "InstanceId", "$_id.InstanceId" },
-                { "AverageValue", new BsonDocument("$avg", new BsonDocument("$slice", new BsonArray { "$LastValues", recordCount })) },
-                { "LastValue", "$LastValue" }
-            })
-        };
+                // Project the desired fields
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "SensorType", "$_id.SensorType" },
+                    { "InstanceId", "$_id.InstanceId" },
+                    { "AverageValue", new BsonDocument("$avg", new BsonDocument("$slice", new BsonArray { "$LastValues", recordCount })) },
+                    { "LastValue", "$LastValue" }
+                })
+            };
 
             var result = await _sensorDataCollection.Aggregate<SensorSummary>(pipeline).FirstOrDefaultAsync();
+
+            if (result != null)
+            {
+                string accountAddress = $"{result.SensorType}{result.InstanceId}";
+                result.Balance = await _blockchainService.GetBalance(accountAddress);
+            }
+
             return result;
         }
     }

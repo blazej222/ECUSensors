@@ -3,12 +3,12 @@ using ECUBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton<BlockchainService>();
 // Add services to the container.
 builder.Services.Configure<SensorDatabaseSettings>(
     builder.Configuration.GetSection("SensorDatabase"));
 
 builder.Services.AddSingleton<SensorDataService>();
-builder.Services.AddSingleton<BlockchainService>();
 builder.Services.AddSingleton<WebSocketManager>();
 builder.Services.AddHostedService<MqttService>();
 
@@ -30,7 +30,25 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowFrontend");
+
+// Middleware dla obsługi zapytań OPTIONS
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:3000");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
+        context.Response.StatusCode = 200;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next();
+});
+
+
 app.UseWebSockets();
+
 
 // Configure the HTTP request pipeline.
 if (true)//app.Environment.IsDevelopment())

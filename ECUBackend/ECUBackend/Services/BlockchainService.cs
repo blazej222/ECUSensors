@@ -107,8 +107,9 @@ namespace ECUBackend.Services
             Console.WriteLine($"Transaction successful! Hash: {receipt.TransactionHash}");
         }
 
-        public async Task GetBalance(string accountAddress)
+        public async Task<int> GetBalance(string accountAddress)
         {
+            accountAddress = _walletDict[accountAddress].Address;
             // Tworzenie instancji Web3
             var web3 = new Web3(_rpcUrl);
 
@@ -123,6 +124,8 @@ namespace ECUBackend.Services
 
             // Wyświetlenie balansu na konsoli
             Console.WriteLine($"Balance of {accountAddress}: {balance} tokens");
+
+            return (int)balance;
         }
     }
 

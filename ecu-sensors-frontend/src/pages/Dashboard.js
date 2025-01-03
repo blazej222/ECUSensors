@@ -4,7 +4,7 @@ const Dashboard = () => {
     const [sensors, setSensors] = useState([]);
 
     useEffect(() => {
-        // Pobranie danych początkowych z backendu
+        // Fetch initial data
         const fetchInitialData = async () => {
             try {
                 const response = await fetch("http://localhost:1337/api/sensors/summary?recordCount=100");
@@ -17,7 +17,7 @@ const Dashboard = () => {
 
         fetchInitialData();
 
-        // Połączenie WebSocket
+        // WebSocket setup
         const ws = new WebSocket("ws://localhost:1337/ws");
 
         ws.onmessage = (event) => {
@@ -62,12 +62,8 @@ const Dashboard = () => {
                                 {sensor.sensorType} (Instance {sensor.instanceId})
                             </h2>
                             <p>Last Value: {sensor.lastValue}</p>
-                            <p>
-                                Average Value:{" "}
-                                {sensor.averageValue
-                                    ? sensor.averageValue.toFixed(2)
-                                    : "N/A"}
-                            </p>
+                            <p>Average Value: {sensor.averageValue.toFixed(2)}</p>
+                            <p>Balance: {sensor.balance}</p> {/* Wyświetlenie balansu */}
                         </div>
                     ))}
             </div>

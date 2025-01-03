@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace ECUBackend.Models
 {
@@ -15,6 +16,9 @@ namespace ECUBackend.Models
 
         [JsonPropertyName("lastValue")]
         public double LastValue { get; set; }
+
+        [JsonPropertyName("balance")]
+        public int Balance { get; set; }
     }
 
 }
