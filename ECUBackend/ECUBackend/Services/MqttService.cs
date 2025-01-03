@@ -10,23 +10,25 @@ using System.Text.Json.Serialization;
 
 public class MqttService : BackgroundService
 {
-    private IMqttClient _mqttClient;
-    private MqttClientOptions _options;
-    private const string TOPIC = "sensors";
-    private SensorDataService _sensorService;
+    private readonly IMqttClient _mqttClient;
+    private readonly MqttClientOptions _options;
+    private readonly SensorDataService _sensorService;
+    private readonly WebSocketManager _webSocketManager;
 
-    public MqttService(SensorDataService service)
+    private const string TOPIC = "sensors";
+
+    public MqttService(SensorDataService service, WebSocketManager webSocketManager)
     {
         _sensorService = service;
+        _webSocketManager = webSocketManager;
+
         _mqttClient = new MqttFactory().CreateMqttClient();
 
-        string broker = Environment.GetEnvironmentVariable("MQQT_BROKER_ADDRESS") ?? "host.docker.internal"; //windows dns
+        string broker = Environment.GetEnvironmentVariable("MQQT_BROKER_ADDRESS") ?? "host.docker.internal"; // windows dns
         int port = int.Parse(Environment.GetEnvironmentVariable("MQQT_BROKER_PORT") ?? "1883");
 
         _options = new MqttClientOptionsBuilder()
             .WithTcpServer(broker, port) // MQTT broker address and port
-            //.WithCredentials(username, password) // Set username and password
-            //.WithClientId(clientId)
             .WithCleanSession()
             .Build();
     }
@@ -64,6 +66,9 @@ public class MqttService : BackgroundService
 
         SensorData sensorData = JsonSerializer.Deserialize<SensorData>(message, options);
         await _sensorService.InsertSensorData(sensorData);
+
+        var summary = await _sensorService.GetSingleSensorSummary(sensorData.SensorType, sensorData.InstanceId);
+        await _webSocketManager.NotifyFrontend(summary);
     }
 
     public class UnixTimestampConverter : JsonConverter<DateTime>

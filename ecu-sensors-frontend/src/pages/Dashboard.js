@@ -1,56 +1,75 @@
-import React, { useEffect, useState } from 'react';
-
-const generateRandomValue = () => Math.floor(Math.random() * 100) + 1; // Losowa wartość z zakresu 1-100
+import React, { useState, useEffect } from "react";
 
 const Dashboard = () => {
-    const [sensorData, setSensorData] = useState({});
+    const [sensors, setSensors] = useState([]);
 
     useEffect(() => {
-        const sensorInstances = [101, 102, 103, 104, 201, 202, 203, 204, 301, 302, 303, 304, 401, 402, 403, 404]; // 16 czujników
+        // Pobranie danych początkowych z backendu
+        const fetchInitialData = async () => {
+            try {
+                const response = await fetch("http://localhost:1337/api/sensors/summary?recordCount=100");
+                const data = await response.json();
+                setSensors(data);
+            } catch (error) {
+                console.error("Error fetching initial data:", error);
+            }
+        };
 
-        const interval = setInterval(() => {
-            setSensorData((prevData) => {
-                const updatedSensorData = { ...prevData };
+        fetchInitialData();
 
-                sensorInstances.forEach((instance) => {
-                    // Inicjalizujemy dane, jeśli ich jeszcze nie ma
-                    if (!updatedSensorData[instance]) {
-                        updatedSensorData[instance] = [];
-                    }
+        // Połączenie WebSocket
+        const ws = new WebSocket("ws://localhost:1337/ws");
 
-                    // Dodajemy nową wartość do tablicy i ograniczamy do ostatnich 100 wartości
-                    const newValue = generateRandomValue();
-                    updatedSensorData[instance] = [...updatedSensorData[instance], newValue].slice(-100);
-                });
+        ws.onmessage = (event) => {
+            const updatedSensor = JSON.parse(event.data);
 
-                return updatedSensorData;
+            setSensors((prevSensors) => {
+                const existingIndex = prevSensors.findIndex(
+                    (sensor) =>
+                        sensor.sensorType === updatedSensor.sensorType &&
+                        sensor.instanceId === updatedSensor.instanceId
+                );
+
+                if (existingIndex !== -1) {
+                    const updatedSensors = [...prevSensors];
+                    updatedSensors[existingIndex] = updatedSensor;
+                    return updatedSensors;
+                } else {
+                    return [...prevSensors, updatedSensor];
+                }
             });
-        }, 2000); // Co 2 sekundy generujemy nowe dane
+        };
 
-        return () => clearInterval(interval); // Czyścimy interwał przy odmontowaniu
+        ws.onclose = () => console.log("WebSocket closed.");
+        ws.onerror = (error) => console.error("WebSocket error:", error);
+
+        return () => ws.close();
     }, []);
 
-    const calculateAverage = (values) => {
-        if (values.length === 0) return 0;
-        return (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(2);
-    };
-
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Sensor Dashboard</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.keys(sensorData).map((sensorInstance) => (
-                    <div
-                        key={sensorInstance}
-                        className="p-4 bg-white shadow-md rounded-md border border-gray-200"
-                    >
-                        <h2 className="text-lg font-bold">Sensor {sensorInstance}</h2>
-                        <p>Ostatnia wartość: {sensorData[sensorInstance].slice(-1)[0] || 'Brak danych'}</p>
-                        <p>
-                            Średnia wartość: {calculateAverage(sensorData[sensorInstance]) || 'Brak danych'}
-                        </p>
-                    </div>
-                ))}
+        <div className="dashboard">
+            <h1>Sensor Dashboard</h1>
+            <div className="sensor-grid">
+                {sensors
+                    .sort(
+                        (a, b) =>
+                            a.sensorType.localeCompare(b.sensorType) ||
+                            a.instanceId - b.instanceId
+                    )
+                    .map((sensor, index) => (
+                        <div key={index} className="sensor-card">
+                            <h2>
+                                {sensor.sensorType} (Instance {sensor.instanceId})
+                            </h2>
+                            <p>Last Value: {sensor.lastValue}</p>
+                            <p>
+                                Average Value:{" "}
+                                {sensor.averageValue
+                                    ? sensor.averageValue.toFixed(2)
+                                    : "N/A"}
+                            </p>
+                        </div>
+                    ))}
             </div>
         </div>
     );

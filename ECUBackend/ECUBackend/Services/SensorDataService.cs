@@ -154,6 +154,48 @@ namespace ECUBackend.Services
                 return false;
             }
         }
+
+        public async Task<SensorSummary> GetSingleSensorSummary(string sensorType, uint instanceId, int recordCount = 100)
+        {
+            var pipeline = new[]
+               {
+            // Filter data for the specified SensorType and InstanceId
+            new BsonDocument("$match", new BsonDocument
+            {
+                { "SensorType", sensorType },
+                { "InstanceId", instanceId }
+            }),
+
+            // Sort by Timestamp in descending order
+            new BsonDocument("$sort", new BsonDocument("Timestamp", -1)),
+
+            // Group by SensorType and InstanceId
+            new BsonDocument("$group", new BsonDocument
+            {
+                { "_id", new BsonDocument
+                    {
+                        { "SensorType", "$SensorType" },
+                        { "InstanceId", "$InstanceId" }
+                    }
+                },
+                { "LastValues", new BsonDocument("$push", "$Value") },
+                { "LastValue", new BsonDocument("$first", "$Value") }
+            }),
+
+            // Project the desired fields
+            new BsonDocument("$project", new BsonDocument
+            {
+                { "_id", 0 },
+                { "SensorType", "$_id.SensorType" },
+                { "InstanceId", "$_id.InstanceId" },
+                { "AverageValue", new BsonDocument("$avg", new BsonDocument("$slice", new BsonArray { "$LastValues", recordCount })) },
+                { "LastValue", "$LastValue" }
+            })
+        };
+
+            var result = await _sensorDataCollection.Aggregate<SensorSummary>(pipeline).FirstOrDefaultAsync();
+            return result;
+        }
     }
 
 }

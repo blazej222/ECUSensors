@@ -8,12 +8,10 @@ builder.Services.Configure<SensorDatabaseSettings>(
     builder.Configuration.GetSection("SensorDatabase"));
 
 builder.Services.AddSingleton<SensorDataService>();
+builder.Services.AddSingleton<WebSocketManager>();
 builder.Services.AddHostedService<MqttService>();
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
@@ -21,27 +19,35 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000") // Adres frontendu
+            policy.WithOrigins("http://localhost:3000")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         });
 });
 
 var app = builder.Build();
 
 app.UseCors("AllowFrontend");
-
-// Configure the HTTP request pipeline.
-if (true)//app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-//app.UseAuthorization();
+app.UseWebSockets();
 
 app.MapControllers();
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// WebSocket endpoint
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/ws" && context.WebSockets.IsWebSocketRequest)
+    {
+        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        var webSocketManager = context.RequestServices.GetRequiredService<WebSocketManager>();
+        await webSocketManager.AddClient(webSocket);
+    }
+    else
+    {
+        await next();
+    }
+});
 
 app.Run();
