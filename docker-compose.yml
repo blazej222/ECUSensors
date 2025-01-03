@@ -19,23 +19,14 @@
 ###
 
     ganache:
-      image: trufflesuite/ganache
+      build:
+        context: ./blockchain-project
+        dockerfile: Dockerfile.ganache
       container_name: ganache
       ports:
         - "7545:7545"
-      command:
-        - --port
-        - "7545"
-        - --host
-        - "0.0.0.0"
-        - --accounts
-        - "20"
-        - --defaultBalanceEther
-        - "100"
-        - --chain.chainId
-        - "123456"
-        - --chain.networkId
-        - "123456"
+      volumes:
+        - ./ganache-data:/ganache-data
 
     truffle:
       build:
@@ -64,7 +55,7 @@
 #           - ./mosquitto:/etc/mosquitto
 #           - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
-# volumes:
+#volumes:
 #     mongodb_data:
 #     mosquitto_data:
 #     mosquitto_config:
