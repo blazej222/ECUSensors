@@ -1,9 +1,11 @@
 ﻿
 namespace ECUBackend.Services
 {
+    using ECUBackend.Models;
     using Nethereum.Web3;
     using Nethereum.Web3.Accounts;
     using System.Numerics;
+    using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -14,6 +16,8 @@ namespace ECUBackend.Services
         private readonly string _contractAddress = "none";
         private readonly string _adminPrivateKey = "none";
         private readonly string _abi;
+
+        private Dictionary<string, SensorCryptoWallet> _walletDict = new();
 
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
@@ -45,11 +49,29 @@ namespace ECUBackend.Services
 #endif
             Console.WriteLine($"Admin private key: {_adminPrivateKey}");
             Console.WriteLine($"Contract address: {_contractAddress}");
+            CreateWalletDictionary();
+        }
+
+        private void CreateWalletDictionary()
+        {
+            string json = File.ReadAllText("Resources/sensors.json");
+
+
+            var wallets = JsonSerializer.Deserialize<List<SensorCryptoWallet>>(json);
+
+            foreach (var wallet in wallets)
+            {
+                if (!string.IsNullOrEmpty(wallet.SensorId))
+                {
+                    _walletDict[wallet.SensorId] = wallet;
+                }
+            }
         }
 
 
         public async Task RewardSensor(string sensorAddress, BigInteger amount)
         {
+            sensorAddress = _walletDict[sensorAddress].Address;
             // Tworzenie konta na podstawie klucza prywatnego
             var account = new Account(_adminPrivateKey);
 
@@ -85,8 +107,9 @@ namespace ECUBackend.Services
             Console.WriteLine($"Transaction successful! Hash: {receipt.TransactionHash}");
         }
 
-        public async Task GetBalance(string accountAddress)
+        public async Task<int> GetBalance(string accountAddress)
         {
+            accountAddress = _walletDict[accountAddress].Address;
             // Tworzenie instancji Web3
             var web3 = new Web3(_rpcUrl);
 
@@ -101,6 +124,8 @@ namespace ECUBackend.Services
 
             // Wyświetlenie balansu na konsoli
             Console.WriteLine($"Balance of {accountAddress}: {balance} tokens");
+
+            return (int)balance;
         }
     }
 

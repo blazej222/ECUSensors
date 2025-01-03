@@ -22,36 +22,24 @@ ChartJS.register(LineElement, PointElement, LinearScale, TimeScale, Title, Toolt
 const SensorsPage = () => {
     const [sensorData, setSensorData] = useState([]);
     const [chartData, setChartData] = useState(null);
+    const [filters, setFilters] = useState(null); // Przechowuje ostatnio użyte filtry
     const [loading, setLoading] = useState(false);
     const [isChartVisible, setIsChartVisible] = useState(true);
 
-    const fetchSensorData = async (filters) => {
+    const fetchSensorData = async (appliedFilters) => {
         try {
             setLoading(true);
             setChartData(null); // Resetuj dane wykresu
 
             const queryParams = new URLSearchParams();
-
-            if (filters.sensorType) queryParams.append('sensorType', filters.sensorType);
-            if (filters.instanceId) queryParams.append('instanceId', filters.instanceId);
-
-            // Sprawdzenie i dodanie dat do zapytania
-            if (filters.startDate) {
-                const formattedStartDate = new Date(filters.startDate).toISOString();
-                queryParams.append('startDate', formattedStartDate);
-            }
-            if (filters.endDate) {
-                const formattedEndDate = new Date(filters.endDate).toISOString();
-                queryParams.append('endDate', formattedEndDate);
-            }
-
-            if (filters.sortBy) queryParams.append('sortBy', filters.sortBy);
-            if (filters.ascending !== undefined) queryParams.append('ascending', filters.ascending);
-            if (filters.limit) queryParams.append('limit', filters.limit);
+            Object.keys(appliedFilters).forEach((key) => {
+                if (appliedFilters[key]) {
+                    queryParams.append(key, appliedFilters[key]);
+                }
+            });
 
             const response = await fetch(`${API_URL}/api/sensors/data/filter?${queryParams.toString()}`);
             const data = await response.json();
-
             setSensorData(Array.isArray(data) ? data : []);
 
             if (Array.isArray(data)) {
@@ -66,21 +54,15 @@ const SensorsPage = () => {
                     return acc;
                 }, {});
 
-                // Sortowanie punktów w każdej grupie względem czasu
-                const sortedGroupedData = Object.entries(groupedData).reduce((acc, [key, points]) => {
-                    acc[key] = points.sort((a, b) => a.x - b.x); // Sortowanie względem czasu
-                    return acc;
-                }, {});
-
                 // Przygotowanie danych wykresu
-                const datasets = Object.entries(sortedGroupedData).map(([key, points]) => ({
+                const datasets = Object.entries(groupedData).map(([key, points]) => ({
                     label: key,
-                    data: points,
+                    data: points.sort((a, b) => a.x - b.x), // Sortowanie punktów względem czasu
                     borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
                         Math.random() * 255
                     )}, ${Math.floor(Math.random() * 255)}, 1)`,
                     backgroundColor: 'rgba(0, 0, 0, 0)',
-                    tension: 0, // Linia prosta między punktami
+                    tension: 0, // Proste linie na wykresie
                 }));
 
                 setChartData({
@@ -95,20 +77,51 @@ const SensorsPage = () => {
         }
     };
 
+    const handleFiltersApply = (appliedFilters) => {
+        setFilters(appliedFilters); // Zapisz ostatnio użyte filtry
+        fetchSensorData(appliedFilters);
+    };
+
+    const downloadCsv = () => {
+        if (!filters) return; // Jeśli brak filtrów, nic nie rób
+
+        const queryParams = new URLSearchParams();
+        Object.keys(filters).forEach((key) => {
+            if (filters[key]) {
+                queryParams.append(key, filters[key]);
+            }
+        });
+        queryParams.append('format', 'csv');
+        const csvUrl = `${API_URL}/api/sensors/data/filter?${queryParams.toString()}`;
+        window.open(csvUrl, '_blank');
+    };
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-4">Sensors Data</h1>
-            <Filters onApplyFilters={fetchSensorData} />
+            <Filters onApplyFilters={handleFiltersApply} />
 
-            {/* Przycisk do rozwijania/zwijania wykresu */}
-            <button
-                onClick={() => setIsChartVisible(!isChartVisible)}
-                className="bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600"
-            >
-                {isChartVisible ? 'Hide Chart' : 'Show Chart'}
-            </button>
+            <div className="flex justify-between items-center my-4">
+                <button
+                    onClick={() => setIsChartVisible(!isChartVisible)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                    {isChartVisible ? 'Hide Chart' : 'Show Chart'}
+                </button>
 
-            {/* Wykres - widoczny tylko jeśli isChartVisible jest true */}
+                <button
+                    onClick={downloadCsv}
+                    disabled={!filters} // Przycisk zablokowany, jeśli brak filtrów
+                    className={`px-4 py-2 rounded ${
+                        !filters
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-green-500 text-white hover:bg-green-600'
+                    }`}
+                >
+                    Download CSV
+                </button>
+            </div>
+
             {isChartVisible && chartData && (
                 <div className="mb-4">
                     <Line
