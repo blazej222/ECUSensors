@@ -1,0 +1,82 @@
+[
+  {
+    "SensorId": "coolant_temperature1",
+    "Address": "0x274C2558a5C4AD1a1fE97837CA0731d5953c2704",
+    "PrivateKey": "0x463a8331ac488dee1aa7d097cf11a3793142ad8a34aa60514100041ec39e2beb"
+  },
+  {
+    "SensorId": "coolant_temperature2",
+    "Address": "0xdbAA4F8D20f6708e09f1dD3d5a366000ff4466bc",
+    "PrivateKey": "0xbfcddbfbd89e8ce44158fa3374b952547c71c213fe4cc9b19ecd8cd7111d8564"
+  },
+  {
+    "SensorId": "coolant_temperature3",
+    "Address": "0x376D53bBA584920EC6f7D921e34769D39ef43950",
+    "PrivateKey": "0x20beb4777224a4012ddff85bf9da876ec68bad932e5838f23ff9a58cb088cea2"
+  },
+  {
+    "SensorId": "coolant_temperature4",
+    "Address": "0x2813f17CB7c2040c32b76b256Ed32FC6aE966CcE",
+    "PrivateKey": "0xab787791fcf39c6f18de1e05d6bb6f2f4093c37dd38e8b0f96055aa73df889ca"
+  },
+  {
+    "SensorId": "map_pressure1",
+    "Address": "0x1f4f4fE51183F0490D165B4B0204fBB310528D52",
+    "PrivateKey": "0x0e5c86ad88a8cbd9bf2353ede102609509f4ade88e5cb5a44b51e6bb443c1a1e"
+  },
+  {
+    "SensorId": "map_pressure2",
+    "Address": "0xD17157b076e57F0f3802f4E4c5d9f3248E809d86",
+    "PrivateKey": "0xc910047d867c127f0e7c7e45c068c446d13459cb2c97e2b8e6e7c1c71e3265d1"
+  },
+  {
+    "SensorId": "map_pressure3",
+    "Address": "0x4DC191Df42BD585A3CAE8f5937880A70Af8094A0",
+    "PrivateKey": "0xe39b563951e9bb39c05f693bfc83302a8bbb690ccf1876093b6ce64c50b36c2f"
+  },
+  {
+    "SensorId": "map_pressure4",
+    "Address": "0xFc337d6e5D2658A9C1162e1072D5DeC4e54D1976",
+    "PrivateKey": "0x391cf8f6c83fad76c3bfebae47fc5c5c724133811f7cc45060475596da07ad84"
+  },
+  {
+    "SensorId": "oxygen_level1",
+    "Address": "0x2cD5f1186e2B3849B5182e1082Ec145B6992CABf",
+    "PrivateKey": "0xfcff5f08163592c5a4f2c4bcfe770ace2f529a62276470cf13eef70a130b137a"
+  },
+  {
+    "SensorId": "oxygen_level2",
+    "Address": "0x0aB52e98Fc75be8800cAF346fb288a5C6EF1Ebb5",
+    "PrivateKey": "0xeb087f19c270c2db1a5c8596c3873c05ae408b526008b8a7e4cac18cddf92553"
+  },
+  {
+    "SensorId": "oxygen_level3",
+    "Address": "0xCed49eEd7f8ECd6944c80456443C75aEf367FEfb",
+    "PrivateKey": "0x74456ddfe036073b051577fe261fb6d85e20c44545935e10b1879273b92dd1c0"
+  },
+  {
+    "SensorId": "oxygen_level4",
+    "Address": "0x94da0112265DEb10a1d4E2E881F89dF90bd93081",
+    "PrivateKey": "0x16cf954e71579156a68291f1323f67ce8a6afa73745f9851afee9a389eb2e577"
+  },
+  {
+    "SensorId": "rpm1",
+    "Address": "0x686B9De91a7373C594c0AC73dF827ee89BA3903d",
+    "PrivateKey": "0xea0afb7727eaaae73443644243b5bdf44141bc7a88d143c4fd1465a0d7be5d00"
+  },
+  {
+    "SensorId": "rpm2",
+    "Address": "0x44Fec1a980774b363FC7cd4DAA84C3FA29c5b459",
+    "PrivateKey": "0x43352543e62273f55c47a60c466b82a0b9219be850d19b8894097dd525aaba8d"
+  },
+  {
+    "SensorId": "rpm3",
+    "Address": "0xc0a6EdA295ad8F9ecE0B63583dB96F20c676BBc9",
+    "PrivateKey": "0xde092f74bdd487bfb833c31ecd6054522e972a885da9ba154c8e662fc346fd22"
+  },
+  {
+    "SensorId": "rpm4",
+    "Address": "0xCBB76f014AC5c3cc70e878b5aB2AAEabE3cba686",
+    "PrivateKey": "0xeba0c20b9b124afdf123dfe4c9987241c1583ffe9d8de2f59e74d0e33d3a5849"
+  }
+]

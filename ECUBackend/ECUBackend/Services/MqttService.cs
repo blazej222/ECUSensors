@@ -4,7 +4,6 @@ using System.Text;
 using ECUBackend.Services;
 using ECUBackend.Models;
 using MQTTnet.Server;
-using MongoDB.Bson;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,10 +13,13 @@ public class MqttService : BackgroundService
     private MqttClientOptions _options;
     private const string TOPIC = "sensors";
     private SensorDataService _sensorService;
+    private BlockchainService _blockchainService;
+    private Dictionary<string, SensorCryptoWallet> _walletDict = new();
 
-    public MqttService(SensorDataService service)
+    public MqttService(SensorDataService service, BlockchainService blockchainService)
     {
         _sensorService = service;
+        _blockchainService = blockchainService;
         _mqttClient = new MqttFactory().CreateMqttClient();
 
         string broker = Environment.GetEnvironmentVariable("MQQT_BROKER_ADDRESS") ?? "host.docker.internal"; //windows dns
@@ -25,10 +27,28 @@ public class MqttService : BackgroundService
 
         _options = new MqttClientOptionsBuilder()
             .WithTcpServer(broker, port) // MQTT broker address and port
-            //.WithCredentials(username, password) // Set username and password
-            //.WithClientId(clientId)
+                                         //.WithCredentials(username, password) // Set username and password
+                                         //.WithClientId(clientId)
             .WithCleanSession()
             .Build();
+
+        CreateWalletDictionary();
+    }
+
+    private void CreateWalletDictionary()
+    {
+        string json = File.ReadAllText("Resources/sensors.json");
+
+
+        var wallets = JsonSerializer.Deserialize<List<SensorCryptoWallet>>(json);
+
+        foreach (var wallet in wallets)
+        {
+            if (!string.IsNullOrEmpty(wallet.SensorId))
+            {
+                _walletDict[wallet.SensorId] = wallet;
+            }
+        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -63,7 +83,12 @@ public class MqttService : BackgroundService
         };
 
         SensorData sensorData = JsonSerializer.Deserialize<SensorData>(message, options);
+        //var rewardAmount = new BigInteger(100000000000);
+        var rewardAmount = 10000;
+
         await _sensorService.InsertSensorData(sensorData);
+        //await
+        _blockchainService.RewardSensor(_walletDict[$"{sensorData.SensorType}{sensorData.InstanceId}"].Address, rewardAmount);
     }
 
     public class UnixTimestampConverter : JsonConverter<DateTime>

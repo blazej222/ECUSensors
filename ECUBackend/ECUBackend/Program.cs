@@ -1,4 +1,4 @@
-using ECUBackend.Models;
+﻿using ECUBackend.Models;
 using ECUBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +8,7 @@ builder.Services.Configure<SensorDatabaseSettings>(
     builder.Configuration.GetSection("SensorDatabase"));
 
 builder.Services.AddSingleton<SensorDataService>();
+builder.Services.AddSingleton<BlockchainService>();
 builder.Services.AddHostedService<MqttService>();
 
 // Add services to the container.
@@ -43,5 +44,6 @@ app.UseHttpsRedirection();
 //app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();
