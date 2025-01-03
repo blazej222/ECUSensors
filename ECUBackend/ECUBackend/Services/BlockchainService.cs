@@ -4,28 +4,54 @@ namespace ECUBackend.Services
     using Nethereum.Web3;
     using Nethereum.Web3.Accounts;
     using System.Numerics;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
 
     public class BlockchainService
     {
         private readonly string _rpcUrl;
-        private readonly string _contractAddress;
+        private readonly string _contractAddress = "none";
+        private readonly string _adminPrivateKey = "none";
         private readonly string _abi;
 
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        public BlockchainService(string rpcUrl, string contractAddress, string abi)
+        public BlockchainService()///string rpcUrl, string contractAddress, string abi)
         {
-            _rpcUrl = rpcUrl;
-            _contractAddress = contractAddress;
-            _abi = abi;
+            _rpcUrl = Environment.GetEnvironmentVariable("RPC_URL") ?? "http://host.docker.internal:7545"; //"http://host.docker.internal:7545";
+            _abi = File.ReadAllText("Resources/SensorToken.abi");
+            //The Docker container is supposed to crash if the keys are not found.
+#if DEBUG
+            _adminPrivateKey = "set it";
+            _contractAddress = "set it";
+#else
+            var content = File.ReadAllText("../ganache-data/ganache-output.log");
+            var privateKeyRegex = new Regex(@"\((\d+)\)\s+(0x[a-fA-F0-9]{64})");
+            var contractRegex = new Regex(@"Contract created:\s+(0x[a-fA-F0-9]{40})");
+
+
+            var privateKeys = privateKeyRegex.Matches(content)
+                .Select(m => m.Groups[2].Value)
+                .ToList();
+
+            var contracts = contractRegex.Matches(content)
+                .Select(c => c.Groups[1].Value)
+                .ToList();
+
+
+            _adminPrivateKey = privateKeys[0];
+            _contractAddress = contracts[0];
+#endif
+            Console.WriteLine($"Admin private key: {_adminPrivateKey}");
+            Console.WriteLine($"Contract address: {_contractAddress}");
         }
 
-        public async Task RewardSensor(string adminPrivateKey, string sensorAddress, BigInteger amount)
+
+        public async Task RewardSensor(string sensorAddress, BigInteger amount)
         {
             // Tworzenie konta na podstawie klucza prywatnego
-            var account = new Account(adminPrivateKey);
+            var account = new Account(_adminPrivateKey);
 
             // Tworzenie instancji Web3 z kontem
             var web3 = new Web3(account, _rpcUrl);

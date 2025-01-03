@@ -6,7 +6,6 @@ using ECUBackend.Models;
 using MQTTnet.Server;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 
 public class MqttService : BackgroundService
 {
@@ -17,13 +16,10 @@ public class MqttService : BackgroundService
     private BlockchainService _blockchainService;
     private Dictionary<string, SensorCryptoWallet> _walletDict = new();
 
-    private string _adminPrivateKey = "none";
-    private string _contractAddress = "none";
-
-
-    public MqttService(SensorDataService service)
+    public MqttService(SensorDataService service, BlockchainService blockchainService)
     {
         _sensorService = service;
+        _blockchainService = blockchainService;
         _mqttClient = new MqttFactory().CreateMqttClient();
 
         string broker = Environment.GetEnvironmentVariable("MQQT_BROKER_ADDRESS") ?? "host.docker.internal"; //windows dns
@@ -36,53 +32,7 @@ public class MqttService : BackgroundService
             .WithCleanSession()
             .Build();
 
-        LoadAdminKey($"../ganache-data/ganache-output.log");
-        Console.WriteLine($"Admin private key: {_adminPrivateKey}");
-        Console.WriteLine($"Contract address: {_contractAddress}");
         CreateWalletDictionary();
-        InitBlockchainService();
-    }
-
-    private void LoadAdminKey(string filePath)
-    {
-        //if (!File.Exists(filePath))
-        //{
-        //    Console.WriteLine($"Ganache file not found: {filePath}");
-        //    return;
-        //}
-
-        //try
-        //{
-
-        //The Docker container is supposed to crash if the keys are not found.
-#if DEBUG
-        _adminPrivateKey = "set it";
-        _contractAddress = "set it";
-#else
-        var content = File.ReadAllText(filePath);
-        var privateKeyRegex = new Regex(@"\((\d+)\)\s+(0x[a-fA-F0-9]{64})");
-        var contractRegex = new Regex(@"Contract created:\s+(0x[a-fA-F0-9]{40})");
-
-
-        var privateKeys = privateKeyRegex.Matches(content)
-            .Select(m => m.Groups[2].Value)
-            .ToList();
-
-        var contracts = contractRegex.Matches(content)
-            .Select(c => c.Groups[1].Value)
-            .ToList();
-
-
-        _adminPrivateKey = privateKeys[0];
-        _contractAddress = contracts[0];
-
-        //}
-        //catch (Exception ex)
-        //{
-        //    Console.WriteLine($"Error: {ex.Message}");
-        //    return;
-        //}
-#endif
     }
 
     private void CreateWalletDictionary()
@@ -138,16 +88,7 @@ public class MqttService : BackgroundService
 
         await _sensorService.InsertSensorData(sensorData);
         //await
-        _blockchainService.RewardSensor(_adminPrivateKey, _walletDict[$"{sensorData.SensorType}{sensorData.InstanceId}"].Address, rewardAmount);
-    }
-
-    private void InitBlockchainService()
-    {
-        var rpcUrl = Environment.GetEnvironmentVariable("RPC_URL") ?? "http://host.docker.internal:7545"; //"http://host.docker.internal:7545";
-        var abi = File.ReadAllText("Resources/SensorToken.abi");
-
-        // Inicjalizacja BlockchainService
-        _blockchainService = new BlockchainService(rpcUrl, _contractAddress, abi);
+        _blockchainService.RewardSensor(_walletDict[$"{sensorData.SensorType}{sensorData.InstanceId}"].Address, rewardAmount);
     }
 
     public class UnixTimestampConverter : JsonConverter<DateTime>
