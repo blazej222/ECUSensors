@@ -27,8 +27,8 @@ namespace ECUBackend.Services
             _abi = File.ReadAllText("Resources/SensorToken.abi");
             //The Docker container is supposed to crash if the keys are not found.
 #if DEBUG
-            _adminPrivateKey = "set it";
-            _contractAddress = "set it";
+            _adminPrivateKey = "0x82564e9cda7b0d625153de1f88055eae7adeb44054c589c40f86084b9f8f8077";
+            _contractAddress = "0xae2d9981e2b2799d3aa21e9d6631bf0f631c270d";
 #else
             var content = File.ReadAllText("../ganache-data/ganache-output.log");
             var privateKeyRegex = new Regex(@"\((\d+)\)\s+(0x[a-fA-F0-9]{64})");
@@ -107,8 +107,9 @@ namespace ECUBackend.Services
             Console.WriteLine($"Transaction successful! Hash: {receipt.TransactionHash}");
         }
 
-        public async Task GetBalance(string accountAddress)
+        public async Task<int> GetBalance(string accountAddress)
         {
+            accountAddress = _walletDict[accountAddress].Address;
             // Tworzenie instancji Web3
             var web3 = new Web3(_rpcUrl);
 
@@ -123,6 +124,8 @@ namespace ECUBackend.Services
 
             // Wyświetlenie balansu na konsoli
             Console.WriteLine($"Balance of {accountAddress}: {balance} tokens");
+
+            return (int)balance;
         }
     }
 

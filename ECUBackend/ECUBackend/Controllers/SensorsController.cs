@@ -11,9 +11,13 @@ namespace ECU.Controllers
     public class SensorsController : ControllerBase
     {
         private readonly SensorDataService _sensorDataService;
+        private readonly BlockchainService _blockchainService;
 
-        public SensorsController(SensorDataService sensorDataService) =>
+        public SensorsController(SensorDataService sensorDataService, BlockchainService blockchainService)
+        {
             _sensorDataService = sensorDataService;
+            _blockchainService = blockchainService;
+        }
 
         [HttpGet]
         public async Task<List<string>> GetSensors() =>
@@ -26,6 +30,12 @@ namespace ECU.Controllers
         [HttpGet("types")]
         public async Task<List<string>> GetTypes() =>
             await _sensorDataService.GetDistinctSensorTypes();
+
+        [HttpGet("wallet")]
+        public async Task<int> GetSaldo(
+            [FromQuery] string sensorType,
+            [FromQuery] uint instanceId) =>
+            await _blockchainService.GetBalance($"{sensorType}{instanceId}");
 
 
         [HttpGet("data/filter")]
