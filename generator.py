@@ -15,25 +15,25 @@ SENSOR_TYPES = {
 }
 
 SENSORS =[
-    {"type": "coolant_temperature", "id":1, "rate":6},
-    # {"type": "coolant_temperature", "id":2, "rate":30},
-    # {"type": "coolant_temperature", "id":3, "rate":30},
-    # {"type": "coolant_temperature", "id":4, "rate":30},
+    {"type": "coolant_temperature", "id":1, "rate":3},
+    {"type": "coolant_temperature", "id":2, "rate":3},
+    {"type": "coolant_temperature", "id":3, "rate":3},
+    {"type": "coolant_temperature", "id":4, "rate":3},
     
-    # {"type": "map_pressure", "id":1, "rate":60},
-    # {"type": "map_pressure", "id":2, "rate":60},
-    # {"type": "map_pressure", "id":3, "rate":60},
-    # {"type": "map_pressure", "id":4, "rate":60},
+    {"type": "map_pressure", "id":1, "rate":10},
+    {"type": "map_pressure", "id":2, "rate":10},
+    {"type": "map_pressure", "id":3, "rate":10},
+    {"type": "map_pressure", "id":4, "rate":10},
     
-    # {"type": "oxygen_level", "id":1, "rate":60},
-    # {"type": "oxygen_level", "id":2, "rate":60},
-    # {"type": "oxygen_level", "id":3, "rate":60},
-    # {"type": "oxygen_level", "id":4, "rate":60},
+    {"type": "oxygen_level", "id":1, "rate":6},
+    {"type": "oxygen_level", "id":2, "rate":6},
+    {"type": "oxygen_level", "id":3, "rate":6},
+    {"type": "oxygen_level", "id":4, "rate":6},
     
-    # {"type": "rpm", "id":1, "rate":60},
-    # {"type": "rpm", "id":2, "rate":60},
-    # {"type": "rpm", "id":3, "rate":60},
-    # {"type": "rpm", "id":4, "rate":60},
+    {"type": "rpm", "id":1, "rate":60},
+    {"type": "rpm", "id":2, "rate":4},
+    {"type": "rpm", "id":3, "rate":4},
+    {"type": "rpm", "id":4, "rate":4},
     
     
 ]
