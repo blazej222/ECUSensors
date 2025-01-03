@@ -58,6 +58,17 @@
         volumes:
           - ./mosquitto:/etc/mosquitto
           - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+          
+    frontend:
+        build:
+            context: ./ecu-sensors-frontend
+            dockerfile: Dockerfile
+        ports:
+            - "3000:3000"
+        environment:
+            - REACT_APP_API_URL=http://app:1337/api
+        depends_on:
+            - app
 
 volumes:
     mongodb_data:
